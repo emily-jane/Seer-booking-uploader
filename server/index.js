@@ -6,14 +6,6 @@ const app = express()
 app.use(express.json());
 app.use(cors()) // so that app can access
 
-// const bookings = JSON.parse(fs.readFileSync('./server/bookings.json')).map(
-//   (bookingRecord) => ({
-//     time: Date.parse(bookingRecord.time),
-//     duration: bookingRecord.duration,
-//     userId: bookingRecord.user_id,
-//   }),
-// )
-
 app.get('/bookings', (_, res) => {
   const bookings = JSON.parse(fs.readFileSync('./server/bookings.json')).map(
     (bookingRecord) => ({

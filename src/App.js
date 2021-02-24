@@ -12,8 +12,6 @@ const apiUrl = 'http://localhost:3001'
 
 export const App = () => {
   const [existingBookingsList, setExistingBookingsList] = useState([]);
-  const [groups, setGroups] = useState([]);
-  const [newGroups, setNewGroups] = useState([]);
   const [newBookingsList, setNewBookingsList] = useState([]);
 
   useEffect(() => {
@@ -25,15 +23,7 @@ export const App = () => {
       .then((response) => response.json())
       .then((bookingsList) => {
         setExistingBookingsList(calendarBookingObject(bookingsList));
-        setGroups(calendarGroupObject(bookingsList));
       })
-  }
-
-  const calendarGroupObject = (list) => {
-    return list.map((booking, index) => ({
-      id: index,
-      title: `User ${booking.userId}`
-    }));
   }
 
   const calendarBookingObject = (list) => {
@@ -100,7 +90,6 @@ export const App = () => {
         const list = calendarBookingObject(data);
         const newBookings = checkForOverlappingBookings(list);
         setNewBookingsList(newBookings);
-        setNewGroups(calendarGroupObject(data));
       }
       reader.readAsText(file)
     })
@@ -116,18 +105,21 @@ export const App = () => {
     xhr.open('POST', `${apiUrl}/bookings`);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(JSON.stringify(bookingsToAdd));
-    // xhr.onreadystatechange = () => {
-    //   if (xhr.status === 200) {
-    //     console.log('yeeeaaaah')
-    //   } else {
-    //     console.log('Something went wrong, please try again')
-    //   }
-    // }
     xhr.addEventListener('load', fetchExistingBookings);
     xhr.addEventListener('error', () => console.log('Something went wrong, please try again'));
+
     setNewBookingsList([]);
-    setNewGroups([]);
   }
+
+  const groups = existingBookingsList.map((booking) => ({
+    id: booking.id,
+    title: booking.title,
+  }))
+
+  const newGroups = newBookingsList.map((booking) => ({
+    id: booking.id,
+    title: booking.title,
+  }))
 
   return (
     <div className='App'>
