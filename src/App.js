@@ -17,13 +17,17 @@ export const App = () => {
   const [newBookingsList, setNewBookingsList] = useState([]);
 
   useEffect(() => {
+    fetchExistingBookings()
+  }, [])
+
+  const fetchExistingBookings = () => {
     fetch(`${apiUrl}/bookings`)
       .then((response) => response.json())
       .then((bookingsList) => {
         setExistingBookingsList(calendarBookingObject(bookingsList));
         setGroups(calendarGroupObject(bookingsList));
       })
-  }, [])
+  }
 
   const calendarGroupObject = (list) => {
     return list.map((booking, index) => ({
@@ -34,12 +38,13 @@ export const App = () => {
 
   const calendarBookingObject = (list) => {
     return list.map((booking, index) => ({
+      userId: booking.userId,
+      duration: booking.duration,
       id: index,
       group: index,
       title: `User ${booking.userId}`,
       start_time: moment(booking.time),
       end_time: moment(booking.time).add(booking.duration, 'm'),
-      // end_time: new Date(new Date(booking.time).getTime() + (booking.duration  * 60 * 1000))
     }));
   }
 
@@ -102,8 +107,24 @@ export const App = () => {
   };
 
   const addNewBookings = () => {
-    const bookingsToAdd = newBookingsList.filter(booking => !booking.isOverlapping);
-    console.log(bookingsToAdd);
+    const bookingsToAdd = newBookingsList.filter(booking => !booking.isOverlapping).map(booking => ({
+      time: booking.start_time,
+      duration: booking.duration,
+      user_id: booking.userId,
+    }));
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${apiUrl}/bookings`);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(JSON.stringify(bookingsToAdd));
+    // xhr.onreadystatechange = () => {
+    //   if (xhr.status === 200) {
+    //     console.log('yeeeaaaah')
+    //   } else {
+    //     console.log('Something went wrong, please try again')
+    //   }
+    // }
+    xhr.addEventListener('load', fetchExistingBookings);
+    xhr.addEventListener('error', () => console.log('Something went wrong, please try again'));
     setNewBookingsList([]);
     setNewGroups([]);
   }
